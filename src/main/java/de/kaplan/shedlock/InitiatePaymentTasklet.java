@@ -37,7 +37,7 @@ public class InitiatePaymentTasklet implements org.springframework.batch.core.st
 
         circuitBreaker.getEventPublisher()
                 .onSuccess(event -> logger.info("CircuitBreaker success on attempt {}", event.getElapsedDuration()))
-                .onError(event -> logger.warn("CircuitBreaker error: {}", event.getThrowable().getMessage()))
+                .onError(event -> logger.info("CircuitBreaker error: {}", event.getThrowable().getMessage()))
                 .onStateTransition(event -> logger.info("CircuitBreaker state transition: from {} to {}",
                         event.getStateTransition().getFromState(), event.getStateTransition().getToState()));
     }

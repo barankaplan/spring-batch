@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
-import org.springframework.batch.item.ExecutionContext;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.stereotype.Service;
 
@@ -36,7 +35,7 @@ public class CompletePaymentTasklet implements Tasklet {
 
         circuitBreaker.getEventPublisher()
                 .onSuccess(event -> logger.info("CircuitBreaker success on attempt {}", event.getElapsedDuration()))
-                .onError(event -> logger.warn("CircuitBreaker error: {}", event.getThrowable().getMessage()))
+                .onError(event -> logger.info("CircuitBreaker error: {}", event.getThrowable().getMessage()))
                 .onStateTransition(event -> logger.info("CircuitBreaker state transition: from {} to {}",
                         event.getStateTransition().getFromState(), event.getStateTransition().getToState()));
     }

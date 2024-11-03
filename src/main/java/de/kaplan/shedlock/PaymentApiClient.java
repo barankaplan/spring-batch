@@ -8,6 +8,7 @@ import java.util.UUID;
 @Component
 public class PaymentApiClient {
 
+
     public String initiatePayment() {
         // Send a request to the external API to initiate the payment
         // For demonstration purposes, return a generated transaction ID
@@ -17,7 +18,7 @@ public class PaymentApiClient {
     public boolean verifyPaymentStatus(String transactionId) {
         // Send a request to the external API to check the payment status
         // For demonstration purposes, return a random verification result
-        return new Random().nextBoolean();
+        return true;
     }
 
     public void completePayment(String transactionId) {

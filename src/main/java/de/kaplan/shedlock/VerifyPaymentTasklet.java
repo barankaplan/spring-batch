@@ -12,6 +12,7 @@ import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.stereotype.Service;
 
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
 @Service
@@ -22,6 +23,7 @@ public class VerifyPaymentTasklet implements Tasklet {
     private final PaymentApiClient paymentApiClient;
     private final Retry retry;
     private final CircuitBreaker circuitBreaker;
+    private final AtomicInteger attemptCounter = new AtomicInteger(0); // Counter to simulate initial failure
 
     public VerifyPaymentTasklet(PaymentApiClient paymentApiClient,
                                 RetryRegistry retryRegistry,
@@ -35,7 +37,7 @@ public class VerifyPaymentTasklet implements Tasklet {
 
         circuitBreaker.getEventPublisher()
                 .onSuccess(event -> logger.info("CircuitBreaker success on attempt {}", event.getElapsedDuration()))
-                .onError(event -> logger.warn("CircuitBreaker error: {}", event.getThrowable().getMessage()))
+                .onError(event -> logger.info("CircuitBreaker error: {}", event.getThrowable().getMessage()))
                 .onStateTransition(event -> logger.info("CircuitBreaker state transition: from {} to {}",
                         event.getStateTransition().getFromState(), event.getStateTransition().getToState()));
     }
@@ -46,14 +48,9 @@ public class VerifyPaymentTasklet implements Tasklet {
 
         String transactionId = (String) chunkContext.getStepContext().getJobExecutionContext().get("transactionId");
 
+        // Wrap the verifyPaymentStatus call with Retry and Circuit Breaker
         Supplier<Boolean> verifyPaymentSupplier = CircuitBreaker.decorateSupplier(circuitBreaker,
-                Retry.decorateSupplier(retry, () -> {
-                    boolean isVerified = paymentApiClient.verifyPaymentStatus(transactionId);
-                    if (!isVerified) {
-                        throw new RuntimeException("Payment verification failed.");
-                    }
-                    return isVerified;
-                }));
+                Retry.decorateSupplier(retry, () -> simulateInitialFailure(transactionId)));
 
         boolean isVerified = verifyPaymentSupplier.get();
 
@@ -61,8 +58,20 @@ public class VerifyPaymentTasklet implements Tasklet {
             logger.info("VerifyPaymentTasklet - Payment successfully verified.");
             return RepeatStatus.FINISHED;
         } else {
-            logger.warn("VerifyPaymentTasklet - Payment verification ultimately failed after retries.");
+            logger.info("VerifyPaymentTasklet - Payment verification ultimately failed after retries.");
             throw new RuntimeException("Payment verification ultimately failed.");
         }
+    }
+
+    /**
+     * Simulates an initial failure on the first attempt to trigger the retry mechanism.
+     */
+    private Boolean simulateInitialFailure(String transactionId) {
+        if (attemptCounter.getAndIncrement() == 0) {
+            logger.info("Simulated failure on first attempt.");
+            throw new RuntimeException("Simulated failure on first attempt.");
+        }
+        // Proceed with actual API call after the first failure
+        return paymentApiClient.verifyPaymentStatus(transactionId);
     }
 }

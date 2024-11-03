@@ -25,7 +25,6 @@ public class ShedlockApplication {
             JobParameters jobParameters = new JobParametersBuilder()
                     .addLong("startAt", System.currentTimeMillis())
                     .toJobParameters();
-
             jobLauncher.run(paymentJob, jobParameters);
         };
     }
