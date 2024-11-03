@@ -1,0 +1,52 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/baran
+    username: baran
+    password: baran
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  sql:
+    init:
+      mode: always
+  batch:
+    jdbc:
+      initialize-schema: always
+    job:
+      enabled: false
+logging:
+  level:
+    root: INFO
+    net.javacrumbs.shedlock: DEBUG
+    com.example.tasklet: DEBUG   # Her bir Tasklet içindeki logları görmek için DEBUG seviyesi
+
+resilience4j:
+  retry:
+    configs:
+      default:
+        max-attempts: 3               # Her başarısız çağrı için maksimum yeniden deneme sayısı
+        wait-duration: 2s             # Yeniden denemeler arasındaki bekleme süresi
+    instances:
+      initiatePaymentRetry:
+        base-config: default          # Varsayılan ayarı kullanarak InitiatePayment için Retry yapılandırması
+      verifyPaymentRetry:
+        base-config: default          # Varsayılan ayarı kullanarak VerifyPayment için Retry yapılandırması
+      completePaymentRetry:
+        base-config: default          # Varsayılan ayarı kullanarak CompletePayment için Retry yapılandırması
+
+  circuitbreaker:
+    configs:
+      default:
+        failure-rate-threshold: 50     # Başarısızlık oranı %50'ye ulaştığında devre kesici tetiklenecek
+        wait-duration-in-open-state: 5s # Devre kesici açıkken bekleme süresi
+    instances:
+      initiatePaymentCircuitBreaker:
+        base-config: default           # Varsayılan ayarı kullanarak InitiatePayment için Circuit Breaker
+      verifyPaymentCircuitBreaker:
+        base-config: default           # Varsayılan ayarı kullanarak VerifyPayment için Circuit Breaker
+      completePaymentCircuitBreaker:
+        base-config: default           # Varsayılan ayarı kullanarak CompletePayment için Circuit Breaker
