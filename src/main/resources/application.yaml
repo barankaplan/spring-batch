@@ -22,31 +22,31 @@ logging:
   level:
     root: INFO
     net.javacrumbs.shedlock: DEBUG
-    com.example.tasklet: DEBUG   # Her bir Tasklet içindeki logları görmek için DEBUG seviyesi
+    com.example.tasklet: DEBUG   # DEBUG level to view logs within each Tasklet
 
 resilience4j:
   retry:
     configs:
       default:
-        max-attempts: 3               # Her başarısız çağrı için maksimum yeniden deneme sayısı
-        wait-duration: 2s             # Yeniden denemeler arasındaki bekleme süresi
+        max-attempts: 3               # Maximum number of retry attempts for each failed call
+        wait-duration: 2s             # Waiting time between retry attempts
     instances:
       initiatePaymentRetry:
-        base-config: default          # Varsayılan ayarı kullanarak InitiatePayment için Retry yapılandırması
+        base-config: default          # Configures Retry for InitiatePayment using default settings
       verifyPaymentRetry:
-        base-config: default          # Varsayılan ayarı kullanarak VerifyPayment için Retry yapılandırması
+        base-config: default          # Configures Retry for VerifyPayment using default settings
       completePaymentRetry:
-        base-config: default          # Varsayılan ayarı kullanarak CompletePayment için Retry yapılandırması
+        base-config: default          # Configures Retry for CompletePayment using default settings
 
   circuitbreaker:
     configs:
       default:
-        failure-rate-threshold: 50     # Başarısızlık oranı %50'ye ulaştığında devre kesici tetiklenecek
-        wait-duration-in-open-state: 5s # Devre kesici açıkken bekleme süresi
+        failure-rate-threshold: 50     # Circuit Breaker will open if failure rate reaches 50%
+        wait-duration-in-open-state: 5s # Time the Circuit Breaker remains open before attempting to close again
     instances:
       initiatePaymentCircuitBreaker:
-        base-config: default           # Varsayılan ayarı kullanarak InitiatePayment için Circuit Breaker
+        base-config: default           # Configures Circuit Breaker for InitiatePayment using default settings
       verifyPaymentCircuitBreaker:
-        base-config: default           # Varsayılan ayarı kullanarak VerifyPayment için Circuit Breaker
+        base-config: default           # Configures Circuit Breaker for VerifyPayment using default settings
       completePaymentCircuitBreaker:
-        base-config: default           # Varsayılan ayarı kullanarak CompletePayment için Circuit Breaker
+        base-config: default           # Configures Circuit Breaker for CompletePayment using default settings
